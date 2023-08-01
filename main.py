@@ -2,16 +2,16 @@ import os
 import numpy as np
 import jax.numpy as jnp
 
-import benchmarks as bm
-import stochastic_reachtube as reach
-import go_tube
+import gotube.benchmarks as bm
+import gotube.stochastic_reachtube as reach
+import gotube.go_tube as go_tube
 import configparser
 import time
-from performance_log import log_args
-from performance_log import close_log
-from performance_log import create_plot_file
-from performance_log import write_plot_file
-from performance_log import log_stat
+from gotube.performance_log import log_args
+from gotube.performance_log import close_log
+from gotube.performance_log import create_plot_file
+from gotube.performance_log import write_plot_file
+from gotube.performance_log import log_stat
 
 import argparse
 
@@ -19,43 +19,11 @@ from jax import config
 config.update("jax_enable_x64", True)
 
 
-if __name__ == "__main__":
-
-    start_time = time.time()
-
-    parser = argparse.ArgumentParser(description="")
-    parser.add_argument("--profile", action="store_true")
-    parser.add_argument("--score", action="store_true")
-    parser.add_argument("--benchmark", default="mlp")
-    # starting_time, time_step and time_horizon for creating reachtubes
-    parser.add_argument("--starting_time", default=0.0, type=float)
-    parser.add_argument("--time_step", default=0.01, type=float)
-    parser.add_argument("--time_horizon", default=10, type=float)
-    # batch-size for tensorization
-    parser.add_argument("--batch_size", default=10000, type=int)
-    # number of GPUs for parallelization
-    parser.add_argument("--num_gpus", default=1, type=int)
-    # use fixed seed for random points (only for comparing different algorithms)
-    parser.add_argument("--fixed_seed", action="store_true")
-    # error-probability
-    parser.add_argument("--gamma", default=0.2, type=float)
-    # mu as maximum over-approximation
-    parser.add_argument("--mu", default=1.5, type=float)
-    # choose between hyperspheres and ellipsoids to describe the Reachsets
-    parser.add_argument("--ellipsoids", action="store_true")
-    # initial radius
-    parser.add_argument("--radius", default=None, type=float)
-
-    args = parser.parse_args()
-    log_args(vars(args))
-
-    config = configparser.ConfigParser()
-    config.read(os.path.dirname(__file__)+"/config.ini")
-
+def run_gotube(model: bm.BaseModel, args, config):
     files = config["files"]
 
     rt = reach.StochasticReachtube(
-        model=bm.get_model(args.benchmark, args.radius),
+        model=bm.get_model(model, args.radius),
         profile=args.profile,
         mu=args.mu,  # mu as maximum over-approximation
         gamma=args.gamma,  # error-probability
@@ -144,3 +112,38 @@ if __name__ == "__main__":
             "samples": args.num_gpus * total_random_points.shape[1],
         }
         close_log(final_notes)
+
+
+if __name__ == "__main__":
+
+    start_time = time.time()
+
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("--profile", action="store_true")
+    parser.add_argument("--score", action="store_true")
+    parser.add_argument("--benchmark", default="mlp")
+    # starting_time, time_step and time_horizon for creating reachtubes
+    parser.add_argument("--starting_time", default=0.0, type=float)
+    parser.add_argument("--time_step", default=0.01, type=float)
+    parser.add_argument("--time_horizon", default=10, type=float)
+    # batch-size for tensorization
+    parser.add_argument("--batch_size", default=10000, type=int)
+    # number of GPUs for parallelization
+    parser.add_argument("--num_gpus", default=1, type=int)
+    # use fixed seed for random points (only for comparing different algorithms)
+    parser.add_argument("--fixed_seed", action="store_true")
+    # error-probability
+    parser.add_argument("--gamma", default=0.2, type=float)
+    # mu as maximum over-approximation
+    parser.add_argument("--mu", default=1.5, type=float)
+    # choose between hyperspheres and ellipsoids to describe the Reachsets
+    parser.add_argument("--ellipsoids", action="store_true")
+    # initial radius
+    parser.add_argument("--radius", default=None, type=float)
+
+    args = parser.parse_args()
+    log_args(vars(args))
+
+    config = configparser.ConfigParser()
+    config.read(os.path.dirname(__file__) + "/config.ini")
+    run_gotube(args.benchmark, args, config)
