@@ -14,17 +14,13 @@ import gotube.dynamics as dynamics
 
 
 def create_aug_state_cartesian(x, F):
-    aug_state = jnp.concatenate((jnp.array([x]), F)).reshape(
-        -1
-    )  # reshape to row vector
-
-    return aug_state
+    return jnp.concatenate((jnp.array([x]), F)).reshape(-1)  # reshape to row vector
 
 
 class StochasticReachtube:
     def __init__(
         self,
-        model: bm.BaseModel = bm.CartpoleCTRNN(None),
+        system: bm.BaseSystem = bm.CartpoleCTRNN(None),
         time_horizon: float = 10.0,  # time_horizon until which the reachtube should be constructed
         profile: bool = False,
         time_step: float = 0.1,  # ReachTube construction
@@ -84,13 +80,13 @@ class StochasticReachtube:
         self.mu = mu
         self.gamma = gamma
 
-        self.model = model
+        self.model = system
         self.init_model()
 
-        self.metric = dynamics.FunctionDynamics(model).metric
+        self.metric = dynamics.FunctionDynamics(system).metric
         self.init_metric()
 
-        self.f_jac_at = dynamics.FunctionDynamics(model).f_jac_at
+        self.f_jac_at = dynamics.FunctionDynamics(system).f_jac_at
 
     def init_metric(self):
         self.M1 = np.eye(self.model.dim)

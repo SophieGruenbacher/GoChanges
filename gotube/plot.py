@@ -115,7 +115,7 @@ if __name__ == "__main__":
     files = config["files"]
 
     rt = reach.StochasticReachtube(
-        model=bm.get_model(args.benchmark, args.radius),
+        system=bm.get_model(args.benchmark, args.radius),
         time_horizon=args.time_horizon,
         time_step=args.time_step,
         samples=args.samples,

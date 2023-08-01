@@ -9,10 +9,9 @@ from jax.numpy import exp
 import pickle
 
 import jax.numpy as jnp
-import flax.linen as nn
 
 
-class BaseModel(nn.Module):
+class BaseSystem:
     """Base class for models to be checked with GoTube."""
     dim: int
 
@@ -65,7 +64,7 @@ def get_model(benchmark, radius=None):
 
 
 # 2-dimensional brusselator
-class Brusselator(BaseModel):
+class Brusselator(BaseSystem):
     def __init__(self, radius=0.01):
         super().__init__(cx=(1, 1), radius=radius)
 
@@ -89,7 +88,7 @@ class Brusselator(BaseModel):
 
 
 # 2-dimensional van der pol
-class VanDerPol(BaseModel):
+class VanDerPol(BaseSystem):
     def __init__(self, radius=0.1):
         super().__init__(cx=(-1, -1), radius=radius)
 
@@ -110,7 +109,7 @@ class VanDerPol(BaseModel):
 
 
 # 4-dimensional Robotarm
-class Robotarm(BaseModel):
+class Robotarm(BaseSystem):
     def __init__(self, radius=0.05):
         super().__init__(cx=(1.505, 1.505, 0.005, 0.005), radius=radius)
 
@@ -177,7 +176,7 @@ class DubinsCar:
 
 
 # 2-dimensional Mitchell  Schaeffer  cardiac-cell
-class MitchellSchaeffer(BaseModel):
+class MitchellSchaeffer(BaseSystem):
     def __init__(self, radius=0.1):
         super().__init__(cx=(0.8, 0.5), radius=radius)
 
@@ -203,7 +202,7 @@ class MitchellSchaeffer(BaseModel):
 
 
 # 4-dimensional cartpole with linear stabilizing controller
-class CartpoleLinear(BaseModel):
+class CartpoleLinear(BaseSystem):
     def __init__(self, radius=0.05):
         super().__init__(cx=(0, 0, 0.001, 0), radius=radius)
 
@@ -252,7 +251,7 @@ class CartpoleLinear(BaseModel):
 
 
 # 17-dimensional Quadcopter
-class Quadcopter(BaseModel):
+class Quadcopter(BaseSystem):
     def __init__(self, radius=0.005):
         super().__init__(cx=(
             -0.995,
@@ -352,7 +351,7 @@ class Quadcopter(BaseModel):
 
 # CTRNN DampedForced Pendulum example
 # from https://easychair.org/publications/open/K6SZ
-class CTRNN_DampedForcedPendulum(BaseModel):
+class CTRNN_DampedForcedPendulum(BaseSystem):
     def __init__(self, radius=1e-8):
         super().__init__(cx=(0.21535, -0.58587, 0.8, 0.52323, 0.5), radius=radius)
 
@@ -421,7 +420,7 @@ class CTRNN_DampedForcedPendulum(BaseModel):
 
 
 # 12-dimensional cartpole with CT-RNN neural network controller
-class CartpoleCTRNN(BaseModel):
+class CartpoleCTRNN(BaseSystem):
     def __init__(self, radius=1e-4):
         super().__init__(cx=(0, 0, 0.001, 0, 0, 0, 0, 0, 0, 0, 0, 0), radius=radius)
 
@@ -609,7 +608,7 @@ class CartpoleCTRNN(BaseModel):
 
 
 # 12-dimensional cartpole with LTC neural network controller
-class CartpoleLTC(BaseModel):
+class CartpoleLTC(BaseSystem):
     def __init__(self, radius=1e-4):
         super().__init__(cx=(0, 0, 0.001, 0, 0, 0, 0, 0, 0, 0, 0, 0), radius=radius)
 
@@ -827,7 +826,7 @@ class CartpoleLTC(BaseModel):
 
 
 # 12-dimensional cartpole with LTC neural network controller (trained with RK integrator)
-class CartpoleLTC_RK(BaseModel):
+class CartpoleLTC_RK(BaseSystem):
     def __init__(self, radius=1e-4):
         super().__init__(cx=(0, 0, 0.001, 0, 0, 0, 0, 0, 0, 0, 0, 0), radius=radius)
 
@@ -1332,7 +1331,7 @@ class CartpoleLTC_RK(BaseModel):
         return np.array(system_dynamics)  # return as numpy array
 
 
-class TestNODE(BaseModel):
+class TestNODE(BaseSystem):
     def __init__(self, radius=1e-4):
         super().__init__(cx=(0, 0), radius=radius)
 
@@ -1374,7 +1373,7 @@ class LDSwithCTRNN:
         return dfdt
 
 
-class PendulumwithCTRNN(BaseModel):
+class PendulumwithCTRNN(BaseSystem):
     def __init__(self, radius=0.5):
         super().__init__(cx=np.zeros(10), radius=radius)
         arr = np.load("rl/pendulum_ctrnn.npz")
@@ -1405,7 +1404,7 @@ class PendulumwithCTRNN(BaseModel):
         return dfdt
 
 
-class CTRNNosc(BaseModel):
+class CTRNNosc(BaseSystem):
     def __init__(self, radius=0.1):
         super().__init__(cx=np.zeros(16), radius=radius)
         arr = np.load("rl/ctrnn_osc.npz")
@@ -1420,7 +1419,7 @@ class CTRNNosc(BaseModel):
         return dhdt
 
 
-class CartPoleMLP(BaseModel):
+class CartPoleMLP(BaseSystem):
     def __init__(self, radius=0.1):
         super().__init__(cx=np.zeros(4), radius=radius)
         self.params = pickle.load(open(os.path.dirname(__file__) + "/rl/cartpole_mlp.pkl", "rb"))
