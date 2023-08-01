@@ -1,10 +1,9 @@
-# optimization problem
-
+# optimization problem solved with vanilla gradient descent
+from functools import partial
 import numpy as np
 import jax.numpy as jnp
 from jax.experimental.ode import odeint
-from jax import vmap, jit, pmap, device_put, devices
-from functools import partial
+from jax import vmap, jit
 
 from scipy.special import gamma
 

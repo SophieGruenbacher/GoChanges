@@ -1545,9 +1545,6 @@ class CartPoleMLP:
         self.length = 0.5  # actually half the pole's length
         self.polemass_length = (self.masspole * self.length)
         self.force_mag = 10.0
-        self.tau = 0.02  # seconds between state updates
-        self.elapsed_time = 0.0
-        self.kinematics_integrator = 'euler'
 
     def fdyn(self, t=0, state=None):
         if state is None:
