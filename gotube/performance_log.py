@@ -41,6 +41,7 @@ def create_plot_file(files):
 
 
 def write_plot_file(fname, mode, t, cx, rad, M1):
+    os.makedirs(os.path.dirname(fname), exist_ok=True)
     f = open(fname, mode)
     f.write(str(t) + " ")
     f.write(' '.join(map(str, cx.reshape(-1))) + " ")
