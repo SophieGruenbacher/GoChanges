@@ -3,7 +3,8 @@ import configparser
 import os
 import numpy as np
 import jax.numpy as jnp
-
+import argparse
+from jax import config
 import gotube.benchmarks as bm
 import gotube.stochastic_reachtube as reach
 import gotube.go_tube as go_tube
@@ -12,6 +13,35 @@ from gotube.performance_log import close_log
 from gotube.performance_log import create_plot_file
 from gotube.performance_log import write_plot_file
 from gotube.performance_log import log_stat
+from gotube.performance_log import log_args
+
+
+config.update("jax_enable_x64", True)
+
+
+def add_gotube_args(parser):
+    parser.add_argument("--profile", action="store_true")
+    parser.add_argument("--score", action="store_true")
+    parser.add_argument("--benchmark", default="mlp")
+    # starting_time, time_step and time_horizon for creating reachtubes
+    parser.add_argument("--starting_time", default=0.0, type=float)
+    parser.add_argument("--time_step", default=0.01, type=float)
+    parser.add_argument("--time_horizon", default=10, type=float)
+    # batch-size for tensorization
+    parser.add_argument("--batch_size", default=10000, type=int)
+    # number of GPUs for parallelization
+    parser.add_argument("--num_gpus", default=1, type=int)
+    # use fixed seed for random points (only for comparing different algorithms)
+    parser.add_argument("--fixed_seed", action="store_true")
+    # error-probability
+    parser.add_argument("--gamma", default=0.2, type=float)
+    # mu as maximum over-approximation
+    parser.add_argument("--mu", default=1.5, type=float)
+    # choose between hyperspheres and ellipsoids to describe the Reachsets
+    parser.add_argument("--ellipsoids", action="store_true")
+    # initial radius
+    parser.add_argument("--radius", default=None, type=float)
+    return parser
 
 
 def run_gotube(system: bm.BaseSystem, args):
@@ -29,7 +59,7 @@ def run_gotube(system: bm.BaseSystem, args):
     config.read(os.path.dirname(__file__) + "/config.ini")
     files = config["files"]
     rt = reach.StochasticReachtube(
-        system=bm.get_model(system, args.radius),
+        system=system,
         profile=args.profile,
         mu=args.mu,  # mu as maximum over-approximation
         gamma=args.gamma,  # error-probability
@@ -118,3 +148,11 @@ def run_gotube(system: bm.BaseSystem, args):
             "samples": args.num_gpus * total_random_points.shape[1],
         }
         close_log(final_notes)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser = add_gotube_args(parser)
+    args = parser.parse_args()
+    log_args(vars(args))
+    run_gotube(bm.get_model(args.benchmark, args.radius), args)
